@@ -9,9 +9,11 @@ args = parser.parse_args()
 import re
 from datetime import datetime
 import requests
+import warnings
+warnings.filterwarnings("ignore")
 
 SEPARATE_STRING = '=================================================================='
-key = "вставь сюда свой ключ от апи яндекс расписания"
+key = "твой апи ключ"
 now = datetime.now()
 params = {"apikey": key,
           "format": "json",
@@ -43,10 +45,12 @@ def search_esr_code_by_name(station: str, name: str):
     else:
         print("Кароч вот че я нашел, пиши код станции и кайфуй")
         for index, i in enumerate(matches):
-            print(i)
+            print(index, i)
         a = input()
         try:
-            params[station] = matches[int(a)]
+            match = matches[int(a)]
+            numbers = re.search(r'\d+', match).group()
+            params[station] = numbers
         except IndexError:
             params[station] = a
 
@@ -81,6 +85,7 @@ search = res.get('search')
 if search:
     print(f"Дата:{search['date']}\nОткуда:{search['from']['title']}\nКуда:{search['to']['title']}")
 else:
+    print(res)
     print("Все хуйня сори")
     exit()
 print('=================== список доступных рейсов ======================')
@@ -102,12 +107,14 @@ if segments:
         if tickets_info:
             try:
                 info = tickets_info["places"]
-                for i in info:
-                    print(f'Стоимость билета: {i["price"]["whole"]} {i["currency"]}')
+                for j in info:
+                    print(f'Стоимость билета: {j["price"]["whole"]} {j["currency"]}')
             except:
                 print(tickets_info)
         thread = i.get('thread')
         if thread:
             print(f"Вид транспорта: {thread.get('transport_type')}")
             print(f"Название нитки: {thread.get('short_title')}")
+        else:
+            print(thread)
         print(SEPARATE_STRING)
